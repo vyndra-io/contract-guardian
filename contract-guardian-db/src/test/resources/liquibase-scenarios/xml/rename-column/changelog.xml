@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog>
+    <changeSet id="46" author="vj">
+        <renameColumn tableName="users" oldColumnName="email" newColumnName="email_address"
+                      columnDataType="VARCHAR(255)"/>
+    </changeSet>
+</databaseChangeLog>

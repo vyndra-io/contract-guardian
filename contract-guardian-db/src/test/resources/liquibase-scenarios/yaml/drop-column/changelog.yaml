@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: "50"
+      author: vj
+      changes:
+        - dropColumn:
+            tableName: payments
+            columnName: card_number

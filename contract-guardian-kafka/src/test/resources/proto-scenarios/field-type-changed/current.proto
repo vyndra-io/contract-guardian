@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package com.example;
+
+message Payment {
+  string id = 1;
+  double amount = 2;
+  string currency = 3;
+}

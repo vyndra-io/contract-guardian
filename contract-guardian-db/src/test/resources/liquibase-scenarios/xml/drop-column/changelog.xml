@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog>
+    <changeSet id="42" author="vj">
+        <dropColumn tableName="orders" columnName="customer_email"/>
+    </changeSet>
+</databaseChangeLog>

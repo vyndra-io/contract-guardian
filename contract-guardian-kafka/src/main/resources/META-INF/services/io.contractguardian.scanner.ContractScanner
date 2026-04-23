@@ -1,0 +1,3 @@
+io.contractguardian.kafka.avro.KafkaAvroScanner
+io.contractguardian.kafka.json.KafkaJsonSchemaScanner
+io.contractguardian.kafka.proto.KafkaProtobufScanner

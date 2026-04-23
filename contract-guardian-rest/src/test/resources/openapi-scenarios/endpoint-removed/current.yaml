@@ -1,0 +1,21 @@
+openapi: "3.0.3"
+info:
+  title: Payment Service
+  version: "1.1.0"
+paths:
+  /payments:
+    post:
+      summary: Create a payment
+      operationId: createPayment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+      responses:
+        "201":
+          description: Payment created

@@ -1,0 +1,37 @@
+version: "1"
+
+sources:
+  kafka:
+    paths:
+      - "schemas/kafka/**/*.avsc"
+      - "schemas/kafka/**/*.json"
+      - "schemas/kafka/**/*.proto"
+    baseline: branch:main
+
+  rest:
+    paths:
+      - "api/openapi/**/*.yaml"
+    baseline: branch:main
+
+rules:
+  kafka:
+    compatibility: BACKWARD
+    overrides:
+      - topic: "internal.*"
+        compatibility: NONE
+
+  rest:
+    breaking:
+      - endpoint-removed
+      - required-param-added
+      - response-field-removed
+      - response-field-type-changed
+      - status-code-removed
+    warning:
+      - response-field-deprecated
+      - parameter-renamed
+    ignore:
+      - "/internal/**"
+
+gate:
+  block-on: breaking

@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "name": "UserValue",
+  "namespace": "com.example.kafka",
+  "doc": "User event schema for the users topic",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string",
+      "doc": "Unique user identifier"
+    },
+    {
+      "name": "email",
+      "type": "string",
+      "doc": "User email address"
+    },
+    {
+      "name": "name",
+      "type": "string",
+      "doc": "User display name"
+    },
+    {
+      "name": "created_at",
+      "type": "long",
+      "doc": "Unix timestamp of account creation"
+    }
+  ]
+}

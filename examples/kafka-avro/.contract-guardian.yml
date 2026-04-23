@@ -1,0 +1,14 @@
+version: "1"
+
+sources:
+  kafka:
+    paths:
+      - "schemas/kafka/**/*.avsc"
+    baseline: branch:main
+
+rules:
+  kafka:
+    compatibility: BACKWARD
+
+gate:
+  block-on: breaking

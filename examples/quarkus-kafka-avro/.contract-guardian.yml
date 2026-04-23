@@ -1,0 +1,18 @@
+version: "1"
+
+sources:
+  kafka:
+    paths:
+      - "src/main/avro/**/*.avsc"
+    baseline: branch:main
+
+rules:
+  kafka:
+    compatibility: BACKWARD
+    overrides:
+      # Internal status-change events — teams coordinate deploys, so NONE is fine
+      - topic: "**/order-status-changed*"
+        compatibility: NONE
+
+gate:
+  block-on: breaking

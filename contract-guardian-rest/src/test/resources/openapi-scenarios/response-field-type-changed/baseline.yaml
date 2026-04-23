@@ -1,0 +1,29 @@
+openapi: "3.0.3"
+info:
+  title: Order Service
+  version: "1.0.0"
+paths:
+  /orders/{id}:
+    get:
+      summary: Get an order
+      operationId: getOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  total:
+                    type: string
+                  status:
+                    type: string

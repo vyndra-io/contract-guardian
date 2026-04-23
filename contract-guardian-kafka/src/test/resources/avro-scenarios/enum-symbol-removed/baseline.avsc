@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "Order",
+  "namespace": "com.example",
+  "fields": [
+    {"name": "id", "type": "string"},
+    {"name": "status", "type": {"type": "enum", "name": "Status", "symbols": ["PENDING", "SHIPPED", "DELIVERED"]}}
+  ]
+}

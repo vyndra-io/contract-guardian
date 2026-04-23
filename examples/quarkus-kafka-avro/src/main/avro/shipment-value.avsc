@@ -1,0 +1,56 @@
+{
+  "type": "record",
+  "name": "ShipmentValue",
+  "namespace": "com.example.order.avro",
+  "doc": "Shipment event consumed from the logistics service",
+  "fields": [
+    {
+      "name": "shipment_id",
+      "type": "string",
+      "doc": "Unique shipment identifier"
+    },
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Associated order identifier"
+    },
+    {
+      "name": "carrier",
+      "type": "string",
+      "doc": "Shipping carrier name"
+    },
+    {
+      "name": "tracking_number",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Carrier tracking number (null until assigned)"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "ShipmentStatus",
+        "symbols": ["LABEL_CREATED", "PICKED_UP", "IN_TRANSIT", "OUT_FOR_DELIVERY", "DELIVERED", "FAILED"],
+        "doc": "Shipment lifecycle status"
+      },
+      "doc": "Current shipment status"
+    },
+    {
+      "name": "estimated_delivery",
+      "type": ["null", {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }],
+      "default": null,
+      "doc": "Estimated delivery timestamp"
+    },
+    {
+      "name": "updated_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "Last update timestamp"
+    }
+  ]
+}

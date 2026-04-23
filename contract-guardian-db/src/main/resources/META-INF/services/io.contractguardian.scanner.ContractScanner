@@ -1,0 +1,3 @@
+io.contractguardian.db.sql.SqlMigrationScanner
+io.contractguardian.db.jpa.JpaEntityScanner
+io.contractguardian.db.liquibase.LiquibaseChangelogScanner

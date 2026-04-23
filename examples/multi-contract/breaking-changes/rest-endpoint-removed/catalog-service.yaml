@@ -1,0 +1,128 @@
+openapi: "3.0.3"
+info:
+  title: Catalog Service API
+  description: |
+    REST API for the Product Catalog Service. Provides endpoints for
+    browsing and retrieving products in the payment system's catalog.
+
+    BREAKING CHANGE: POST /products has been removed. Any client that
+    calls this endpoint to create products will receive a 404. Existing
+    integrations must be updated before deploying this version.
+  version: "1.1.0"
+  contact:
+    name: Payment Service Team
+    email: platform@paymentservice.com
+
+servers:
+  - url: https://api.paymentservice.com/v1
+    description: Production
+
+tags:
+  - name: products
+    description: Product catalog operations
+
+paths:
+  /products:
+    get:
+      summary: List all products
+      operationId: listProducts
+      tags: [products]
+      parameters:
+        - name: category
+          in: query
+          required: false
+          description: Filter products by category.
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination (1-based).
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          description: Number of items per page.
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: A paginated list of products.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  totalCount:
+                    type: integer
+                    description: Total number of products matching the query.
+        "500":
+          description: Unexpected server error.
+
+  /products/{id}:
+    get:
+      summary: Get a product by ID
+      operationId: getProductById
+      tags: [products]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The requested product.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Product not found.
+        "500":
+          description: Unexpected server error.
+
+components:
+  schemas:
+    Product:
+      type: object
+      description: Represents a product in the catalog.
+      required: [id, name, price, category]
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the product.
+        name:
+          type: string
+          description: Display name of the product.
+        price:
+          type: number
+          format: double
+          description: Price of the product in the default currency.
+        category:
+          type: string
+          description: Product category (e.g., electronics, apparel).
+
+    ProductRequest:
+      type: object
+      description: Request body for creating a new product.
+      required: [name, price, category]
+      properties:
+        name:
+          type: string
+          description: Display name of the product.
+        price:
+          type: number
+          format: double
+          description: Price of the product in the default currency.
+        category:
+          type: string
+          description: Product category.

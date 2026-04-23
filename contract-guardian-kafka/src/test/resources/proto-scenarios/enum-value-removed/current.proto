@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package com.example;
+
+enum OrderStatus {
+  UNKNOWN = 0;
+  PENDING = 1;
+  ACTIVE = 2;
+}
+
+message Order {
+  string id = 1;
+  OrderStatus status = 2;
+}

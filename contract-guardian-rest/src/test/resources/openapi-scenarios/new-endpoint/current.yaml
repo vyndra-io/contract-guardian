@@ -1,0 +1,25 @@
+openapi: "3.0.3"
+info:
+  title: Catalog Service
+  version: "1.1.0"
+paths:
+  /products:
+    get:
+      summary: List products
+      operationId: listProducts
+      responses:
+        "200":
+          description: Product list
+  /products/{id}:
+    get:
+      summary: Get a product
+      operationId: getProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product found

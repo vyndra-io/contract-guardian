@@ -1,0 +1,42 @@
+{
+  "type": "record",
+  "name": "OrderStatusChangedValue",
+  "namespace": "com.example.order.avro",
+  "doc": "Event published when an order transitions to a new status",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Order identifier"
+    },
+    {
+      "name": "previous_status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatusChange",
+        "symbols": ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"],
+        "doc": "Order lifecycle status"
+      },
+      "doc": "Status before the transition"
+    },
+    {
+      "name": "new_status",
+      "type": "OrderStatusChange",
+      "doc": "Status after the transition"
+    },
+    {
+      "name": "reason",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Optional reason for the status change (e.g., cancellation reason)"
+    },
+    {
+      "name": "changed_at",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      },
+      "doc": "When the status change occurred"
+    }
+  ]
+}

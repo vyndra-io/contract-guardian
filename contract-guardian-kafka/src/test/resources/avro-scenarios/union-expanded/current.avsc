@@ -1,0 +1,9 @@
+{
+  "type": "record",
+  "name": "Event",
+  "namespace": "com.example",
+  "fields": [
+    {"name": "id", "type": "string"},
+    {"name": "payload", "type": ["null", "string", "int"]}
+  ]
+}

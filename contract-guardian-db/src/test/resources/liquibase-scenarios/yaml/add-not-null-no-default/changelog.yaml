@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: "51"
+      author: vj
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: country_code
+                  type: CHAR(2)
+                  constraints:
+                    nullable: false

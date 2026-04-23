@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog>
+    <changeSet id="10" author="vj">
+        <addColumn tableName="orders">
+            <column name="notes" type="TEXT"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

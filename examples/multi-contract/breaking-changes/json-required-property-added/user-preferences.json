@@ -1,0 +1,31 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://paymentservice.com/schemas/user-preferences",
+  "title": "UserPreferences",
+  "description": "Captures a user's application preferences published to the user-preferences Kafka topic.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Unique identifier of the user."
+    },
+    "theme": {
+      "type": "string",
+      "description": "UI theme selected by the user (e.g., light, dark)."
+    },
+    "notifications_enabled": {
+      "type": "boolean",
+      "description": "Whether the user has opted in to push notifications."
+    },
+    "language": {
+      "type": "string",
+      "description": "Preferred language code in BCP 47 format (e.g., en-US)."
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic region of the user (e.g., us-east, eu-west). Required for routing."
+    }
+  },
+  "required": ["user_id", "region"],
+  "additionalProperties": false
+}

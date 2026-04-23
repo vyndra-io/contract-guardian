@@ -1,0 +1,37 @@
+{
+  "type": "record",
+  "name": "OrderValue",
+  "namespace": "com.example.kafka",
+  "doc": "Order event schema for the orders topic",
+  "fields": [
+    {
+      "name": "order_id",
+      "type": "string",
+      "doc": "Unique order identifier"
+    },
+    {
+      "name": "user_id",
+      "type": "string",
+      "doc": "User who placed the order"
+    },
+    {
+      "name": "amount",
+      "type": "double",
+      "doc": "Order total amount"
+    },
+    {
+      "name": "status",
+      "type": {
+        "type": "enum",
+        "name": "OrderStatus",
+        "symbols": ["PENDING", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"]
+      },
+      "doc": "Current order status"
+    },
+    {
+      "name": "created_at",
+      "type": "long",
+      "doc": "Unix timestamp of order creation"
+    }
+  ]
+}

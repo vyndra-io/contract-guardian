@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog>
+    <changeSet id="48" author="vj">
+        <modifyDataType tableName="orders" columnName="amount" newDataType="DECIMAL(10,2)"/>
+    </changeSet>
+</databaseChangeLog>

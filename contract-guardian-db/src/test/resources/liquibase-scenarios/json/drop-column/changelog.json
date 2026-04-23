@@ -1,0 +1,18 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "60",
+        "author": "vj",
+        "changes": [
+          {
+            "dropColumn": {
+              "tableName": "shipments",
+              "columnName": "tracking_code"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

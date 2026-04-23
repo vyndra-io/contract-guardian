@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package com.paymentservice.events;
+
+option java_package = "com.paymentservice.events";
+option java_outer_classname = "OrderEventProto";
+option java_multiple_files = true;
+
+// Represents an order event produced by the Order Service and published
+// to the order-events Kafka topic.
+//
+// BREAKING CHANGE: field 4 (status) was removed without declaring it as
+// reserved. Consumers that still populate or read field 4 will encounter
+// silent data corruption or deserialization errors. The correct approach
+// is to add: reserved 4; reserved "status";
+message OrderEvent {
+  // Unique identifier for the order.
+  string id = 1;
+
+  // Identifier of the customer who placed the order.
+  string customer_id = 2;
+
+  // Total monetary amount for the order.
+  double total_amount = 3;
+}
