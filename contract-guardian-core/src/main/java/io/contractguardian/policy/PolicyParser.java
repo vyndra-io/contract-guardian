@@ -136,7 +136,10 @@ public class PolicyParser {
             overrides.add(new CompatibilityOverride(topic, mode));
         }
 
-        return new KafkaRuleConfig(compatibility, overrides);
+        final int nVersionCompatibility =
+                (Integer) raw.getOrDefault("n-version-compatibility", 1);
+
+        return new KafkaRuleConfig(compatibility, overrides, nVersionCompatibility);
     }
 
     @SuppressWarnings("unchecked")
@@ -148,7 +151,10 @@ public class PolicyParser {
         final List<String> ignore =
                 (List<String>) raw.getOrDefault("ignore", List.of());
 
-        return new RestRuleConfig(breaking, warning, ignore);
+        final int nVersionCompatibility =
+                (Integer) raw.getOrDefault("n-version-compatibility", 1);
+
+        return new RestRuleConfig(breaking, warning, ignore, nVersionCompatibility);
     }
 
     @SuppressWarnings("unchecked")

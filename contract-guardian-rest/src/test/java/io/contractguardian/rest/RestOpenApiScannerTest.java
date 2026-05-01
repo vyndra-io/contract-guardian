@@ -107,7 +107,7 @@ class RestOpenApiScannerTest {
 
         RestRuleConfig configWithIgnore = new RestRuleConfig(
                 defaultConfig.breaking(), defaultConfig.warning(),
-                List.of("/payments/{id}"));
+                List.of("/payments/{id}"), 1);
 
         ScanResult result = scanner.scan(current, baseline, configWithIgnore);
 

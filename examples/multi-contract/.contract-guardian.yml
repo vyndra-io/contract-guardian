@@ -16,11 +16,13 @@ sources:
 rules:
   kafka:
     compatibility: BACKWARD
+    # n-version-compatibility: 1  # check against last N committed versions (default: 1)
     overrides:
       - topic: "internal.*"
         compatibility: NONE
 
   rest:
+    # n-version-compatibility: 1  # check against last N committed versions (default: 1)
     breaking:
       - endpoint-removed
       - required-param-added

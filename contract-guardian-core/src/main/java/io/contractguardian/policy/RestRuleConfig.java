@@ -28,21 +28,25 @@ public class RestRuleConfig extends RuleConfig {
     private final List<String> breaking;
     private final List<String> warning;
     private final List<String> ignorePaths;
+    private final int nVersionCompatibility;
 
     /**
      * Creates a REST rule configuration.
      *
-     * @param breaking    change types classified as breaking
-     * @param warning     change types classified as warnings
-     * @param ignorePaths API path patterns to exclude from scanning
+     * @param breaking              change types classified as breaking
+     * @param warning               change types classified as warnings
+     * @param ignorePaths           API path patterns to exclude from scanning
+     * @param nVersionCompatibility number of previous versions that must remain compatible
      */
     public RestRuleConfig(final List<String> breaking,
                           final List<String> warning,
-                          final List<String> ignorePaths) {
+                          final List<String> ignorePaths,
+                          final int nVersionCompatibility) {
         super("rest");
         this.breaking = List.copyOf(breaking);
         this.warning = List.copyOf(warning);
         this.ignorePaths = List.copyOf(ignorePaths);
+        this.nVersionCompatibility = nVersionCompatibility;
     }
 
     /**
@@ -70,6 +74,16 @@ public class RestRuleConfig extends RuleConfig {
      */
     public List<String> ignorePaths() {
         return ignorePaths;
+    }
+
+    /**
+     * Returns the number of previous API spec versions the current version must remain compatible with.
+     *
+     * @return the n-version compatibility window
+     */
+    @Override
+    public int nVersionCompatibility() {
+        return nVersionCompatibility;
     }
 
     /**
@@ -113,7 +127,7 @@ public class RestRuleConfig extends RuleConfig {
      * @return the default config
      */
     public static RestRuleConfig defaultConfig() {
-        return new RestRuleConfig(DEFAULT_BREAKING, DEFAULT_WARNING, List.of());
+        return new RestRuleConfig(DEFAULT_BREAKING, DEFAULT_WARNING, List.of(), 1);
     }
 
     private boolean matchesPathPattern(final String apiPath, final String pattern) {

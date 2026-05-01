@@ -9,6 +9,7 @@ sources:
 rules:
   kafka:
     compatibility: BACKWARD
+    # n-version-compatibility: 1  # check against last N committed versions (default: 1)
 
 gate:
   block-on: breaking
