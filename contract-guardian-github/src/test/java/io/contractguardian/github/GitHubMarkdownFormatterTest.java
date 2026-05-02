@@ -1,9 +1,9 @@
 package io.contractguardian.github;
 
+import io.contractguardian.model.ApprovalStatus;
 import io.contractguardian.model.ContractType;
 import io.contractguardian.model.Finding;
 import io.contractguardian.model.ScanResult;
-import io.contractguardian.model.Severity;
 import io.contractguardian.model.Verdict;
 import io.contractguardian.model.VerdictStatus;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class GitHubMarkdownFormatterTest {
                 "field-removed", "Field 'email' removed");
         ScanResult result = new ScanResult("schema/user.avsc", ContractType.KAFKA_AVRO,
                 List.of(breaking), Duration.ofMillis(10));
-        Verdict verdict = new Verdict(VerdictStatus.FAIL, List.of(result), Duration.ofMillis(10));
+        Verdict verdict = new Verdict(VerdictStatus.FAIL, List.of(result), Duration.ofMillis(10), ApprovalStatus.none());
 
         String output = formatter.format(verdict);
 
@@ -53,7 +53,7 @@ class GitHubMarkdownFormatterTest {
                 "field-removed", "Field removed", null, "Add a default value before removing");
         ScanResult result = new ScanResult("schema/order.avsc", ContractType.KAFKA_AVRO,
                 List.of(breaking), Duration.ofMillis(5));
-        Verdict verdict = new Verdict(VerdictStatus.FAIL, List.of(result), Duration.ofMillis(5));
+        Verdict verdict = new Verdict(VerdictStatus.FAIL, List.of(result), Duration.ofMillis(5), ApprovalStatus.none());
 
         String output = formatter.format(verdict);
 
@@ -62,7 +62,7 @@ class GitHubMarkdownFormatterTest {
 
     @Test
     void format_emptyResults_showsNoChanges() {
-        Verdict verdict = new Verdict(VerdictStatus.PASS, List.of(), Duration.ofMillis(0));
+        Verdict verdict = new Verdict(VerdictStatus.PASS, List.of(), Duration.ofMillis(0), ApprovalStatus.none());
         String output = formatter.format(verdict);
 
         assertThat(output).contains("No contract files changed");
@@ -84,6 +84,6 @@ class GitHubMarkdownFormatterTest {
                 "compatible", "Schema is compatible");
         ScanResult result = new ScanResult("schema/user.avsc", ContractType.KAFKA_AVRO,
                 List.of(info), Duration.ofMillis(5));
-        return new Verdict(VerdictStatus.PASS, List.of(result), Duration.ofMillis(5));
+        return new Verdict(VerdictStatus.PASS, List.of(result), Duration.ofMillis(5), ApprovalStatus.none());
     }
 }

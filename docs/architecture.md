@@ -44,14 +44,18 @@ CLI (scan command)
     ├── ContractScanner(s)     — one scanner runs per changed file
     │   └── returns ScanResult — zero or more Findings describing what changed
     │
+    ├── ApprovalChecker        — (optional) fetches PR/MR label + event data from GitHub/GitLab
+    │   └── returns ApprovalStatus — approved:true/false + approvedBy username
+    │
     ├── PolicyEngine           — reads .contract-guardian.yml and evaluates all ScanResults
-    │   └── produces Verdict   — PASS / WARN / FAIL
+    │   │                        applies approval override if approved:true + bypass enabled
+    │   └── produces Verdict   — PASS / WARN / FAIL (+ ApprovalStatus carried through)
     │
     └── Reporter(s)            — formats the Verdict and sends it somewhere
-        ├── TerminalReporter   — colored output to the console
+        ├── TerminalReporter   — colored output; prints override notice when WARN + breaking
         ├── JUnitXmlReporter   — XML file for CI dashboards
-        ├── GitHubReporter     — comment on a GitHub PR
-        └── GitLabReporter     — note on a GitLab MR
+        ├── GitHubReporter     — comment on a GitHub PR; shows override blockquote
+        └── GitLabReporter     — note on a GitLab MR; shows override blockquote
 ```
 
 **Example:** You change `schemas/kafka/payment-value.avsc`. The `DiffAnalyzer` sees the `.avsc` extension and classifies it as `KAFKA_AVRO`. The `ScannerRegistry` finds `KafkaAvroScanner`, which compares the current and baseline versions of the file. It produces a `Finding` for the removed field. The `PolicyEngine` checks your config — `block-on: breaking` — and emits a `FAIL` verdict. The `TerminalReporter` prints the result; the `GitHubReporter` posts it to the PR.
@@ -100,12 +104,21 @@ public record ScanResult(
     Duration scanDuration
 ) {}
 
+/** Carries the result of checking whether an override approval is in place. */
+public record ApprovalStatus(boolean approved, String approvedBy) {
+    public static ApprovalStatus none() { ... }
+}
+
 /** The final verdict after the policy engine runs. */
 public record Verdict(
     VerdictStatus status,
     List<ScanResult> results,
-    Duration totalDuration
-) {}
+    Duration totalDuration,
+    ApprovalStatus approvalStatus   // ApprovalStatus.none() when no override was checked
+) {
+    /** True when the verdict was downgraded from FAIL to WARN via an approval override. */
+    public boolean isOverridden() { ... }
+}
 ```
 
 ---
@@ -159,6 +172,8 @@ Uses the Apache Avro `SchemaCompatibility` API. Supports `BACKWARD`, `FORWARD`, 
 - Field type changed to an incompatible type
 - Enum symbol removed
 - Union type narrowed (branch removed)
+
+**N-version compatibility:** When `n-version-compatibility: N` is configured (N > 1), the scanner walks the git log of the base branch to retrieve the last N committed versions of each changed schema file and runs the compatibility check against every version in the window. A finding is emitted if the new schema breaks compatibility with any of them.
 
 ### Kafka JSON Schema (`contract-guardian-kafka`)
 
@@ -233,9 +248,35 @@ The `gate` setting controls which severity level blocks the merge:
 ```yaml
 gate:
   block-on: breaking   # breaking | warning | any
+  approval-required-to-bypass: true
+  approval-label: "schema-override"
+  approvers:
+    - alice
+```
+
+When `approval-required-to-bypass: true`, `PolicyEngine.evaluate()` accepts an `ApprovalStatus` from an `ApprovalChecker`. If the status is approved and the verdict would otherwise be `FAIL`, it is downgraded to `WARN` (exit code 0) so the PR can merge with a visible audit trail.
+
+```java
+// Standard call — no override checked
+Verdict v = engine.evaluate(results, duration);
+
+// CI call — override checked via GitHub/GitLab label API
+ApprovalStatus approval = checker.check(gate);
+Verdict v = engine.evaluate(results, duration, approval);
 ```
 
 Rules can be overridden per-file or per-topic using `overrides`. See [Configuration Reference](configuration.md) for all options.
+
+## Approval Checker SPI
+
+`ApprovalChecker` is a small SPI defined in `contract-guardian-core`. Implementations live in the platform modules:
+
+| Implementation | Module | How it checks |
+|---|---|---|
+| `GitHubApprovalChecker` | `contract-guardian-github` | Fetches PR labels and issue events via GitHub REST API |
+| `GitLabApprovalChecker` | `contract-guardian-gitlab` | Fetches MR labels and resource label events via GitLab REST API |
+
+Both implementations fail open — if the API call fails (network error, bad token), `ApprovalStatus.none()` is returned and the verdict is not affected.
 
 ---
 

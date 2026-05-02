@@ -6,14 +6,16 @@ import java.util.List;
 /**
  * Final verdict after evaluating all scan results against the gate policy.
  *
- * @param status        the overall pass/warn/fail status
- * @param results       the individual scan results
- * @param totalDuration the total time taken for all scans
+ * @param status         the overall pass/warn/fail status
+ * @param results        the individual scan results
+ * @param totalDuration  the total time taken for all scans
+ * @param approvalStatus the approval status when an override was checked; never {@code null}
  */
 public record Verdict(
         VerdictStatus status,
         List<ScanResult> results,
-        Duration totalDuration
+        Duration totalDuration,
+        ApprovalStatus approvalStatus
 ) {
 
     public Verdict {
@@ -25,6 +27,14 @@ public record Verdict(
      */
     public int exitCode() {
         return status == VerdictStatus.FAIL ? 1 : 0;
+    }
+
+    /**
+     * Returns {@code true} when the verdict was downgraded from FAIL to WARN due to an
+     * explicit approval override.
+     */
+    public boolean isOverridden() {
+        return approvalStatus.approved() && status == VerdictStatus.WARN;
     }
 
     /**

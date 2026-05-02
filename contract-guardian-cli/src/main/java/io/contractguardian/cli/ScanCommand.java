@@ -2,10 +2,15 @@ package io.contractguardian.cli;
 
 import io.contractguardian.engine.DiffAnalyzer;
 import io.contractguardian.engine.PolicyEngine;
+import io.contractguardian.github.GitHubApprovalChecker;
 import io.contractguardian.github.GitHubPrReporter;
+import io.contractguardian.gitlab.GitLabApprovalChecker;
 import io.contractguardian.gitlab.GitLabMrReporter;
+import io.contractguardian.model.ApprovalStatus;
 import io.contractguardian.model.ScanResult;
 import io.contractguardian.model.Verdict;
+import io.contractguardian.policy.ApprovalChecker;
+import io.contractguardian.policy.GateConfig;
 import io.contractguardian.policy.PolicyConfig;
 import io.contractguardian.policy.PolicyParser;
 import io.contractguardian.report.JUnitXmlReporter;
@@ -69,8 +74,9 @@ public class ScanCommand implements Callable<Integer> {
         final List<ScanResult> results = analyzer.analyze(diffSpec);
         final Duration totalDuration = Duration.between(start, Instant.now());
 
+        final ApprovalStatus approval = resolveApproval(policy.gate());
         final PolicyEngine engine = new PolicyEngine(policy);
-        final Verdict verdict = engine.evaluate(results, totalDuration);
+        final Verdict verdict = engine.evaluate(results, totalDuration, approval);
 
         final List<Reporter> reporterList = buildReporters();
         for (final Reporter reporter : reporterList) {
@@ -78,6 +84,29 @@ public class ScanCommand implements Callable<Integer> {
         }
 
         return verdict.exitCode();
+    }
+
+    private ApprovalStatus resolveApproval(final GateConfig gate) {
+        if (!gate.approvalRequiredToBypass()) {
+            return ApprovalStatus.none();
+        }
+        if (githubPr != null && !githubPr.isBlank()) {
+            try {
+                final ApprovalChecker checker = GitHubApprovalChecker.fromSpec(githubPr);
+                return checker.check(gate);
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.err.println("Cannot check GitHub PR approval: " + e.getMessage());
+            }
+        }
+        if (gitlabMr != null && !gitlabMr.isBlank()) {
+            try {
+                final ApprovalChecker checker = GitLabApprovalChecker.fromSpec(gitlabMr);
+                return checker.check(gate);
+            } catch (IllegalArgumentException | IllegalStateException e) {
+                System.err.println("Cannot check GitLab MR approval: " + e.getMessage());
+            }
+        }
+        return ApprovalStatus.none();
     }
 
     private List<Reporter> buildReporters() {

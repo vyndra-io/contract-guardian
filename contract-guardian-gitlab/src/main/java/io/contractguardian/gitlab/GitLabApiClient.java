@@ -100,6 +100,40 @@ public class GitLabApiClient {
     }
 
     /**
+     * Returns the merge request object, which includes a {@code labels} field containing
+     * a JSON array of label name strings currently applied to the MR.
+     *
+     * @param projectId the URL-encoded project path or numeric project ID
+     * @param mrIid     the merge request internal ID
+     * @return the MR object as a JSON node; the {@code labels} field is a string array
+     * @throws GitLabApiException if the API call fails
+     */
+    public JsonNode getMergeRequest(final String projectId, final int mrIid) {
+        final String encoded = URLEncoder.encode(projectId, StandardCharsets.UTF_8);
+        final String url = String.format("%s/projects/%s/merge_requests/%d", apiBase, encoded, mrIid);
+        return executeRequest(buildGetRequest(url));
+    }
+
+    /**
+     * Lists all resource label events for a merge request, recording who applied or
+     * removed each label and when.
+     *
+     * <p>Each event object contains {@code action} ({@code "add"} or {@code "remove"}),
+     * {@code label.name}, and {@code user.username} fields.
+     *
+     * @param projectId the URL-encoded project path or numeric project ID
+     * @param mrIid     the merge request internal ID
+     * @return a JSON array of resource label event objects
+     * @throws GitLabApiException if the API call fails
+     */
+    public JsonNode listLabelEvents(final String projectId, final int mrIid) {
+        final String encoded = URLEncoder.encode(projectId, StandardCharsets.UTF_8);
+        final String url = String.format("%s/projects/%s/merge_requests/%d/resource_label_events",
+                apiBase, encoded, mrIid);
+        return executeRequest(buildGetRequest(url));
+    }
+
+    /**
      * Finds an existing contract-guardian note by looking for the hidden marker.
      *
      * @param notes  the JSON array of existing MR notes

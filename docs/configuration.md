@@ -137,6 +137,7 @@ Controls how compatibility is evaluated for each source. If a source has no entr
 rules:
   kafka:
     compatibility: BACKWARD    # BACKWARD | FORWARD | FULL | NONE
+    n-version-compatibility: 1 # optional — how many previous versions to check against
     overrides:                 # optional — override per file path
       - topic: "internal/**"
         compatibility: NONE
@@ -152,6 +153,24 @@ rules:
 | `FORWARD` | Old schema can read data written by the new schema. Safe to deploy new producers before consumers update. |
 | `FULL` | Both BACKWARD and FORWARD simultaneously. Strictest option for shared platform schemas. |
 | `NONE` | No checks at all. Use for scratch or internal-only topics. |
+
+#### N-Version Compatibility
+
+By default, the scanner checks the current schema against the immediately preceding version on the baseline branch. Use `n-version-compatibility` to widen the window — the schema must remain compatible with the last N committed versions:
+
+```yaml
+rules:
+  kafka:
+    compatibility: BACKWARD
+    n-version-compatibility: 3   # compatible with last 3 versions, not just the latest
+```
+
+| Value | Effect |
+|---|---|
+| `1` (default) | Check against the immediately preceding version only |
+| `N > 1` | Check against the last N committed versions on the base branch |
+
+Use this when your deployment pipeline allows services to lag by more than one release.
 
 #### Per-File Overrides
 
@@ -273,18 +292,41 @@ Pattern syntax uses `/` as the path separator. `**` matches any number of path s
 
 ## `gate`
 
-Controls when the build fails based on finding severity.
+Controls when the build fails based on finding severity, and optionally allows authorised approvers to override a blocked merge.
 
 ```yaml
 gate:
-  block-on: breaking     # breaking | warning | any
+  block-on: breaking                    # breaking | warning | any
+  approval-required-to-bypass: true     # optional — enable label-based override
+  approval-label: "schema-override"     # label name that signals approval
+  approvers:                            # users/teams who can apply the label
+    - alice
+    - platform-team
 ```
+
+### `block-on`
 
 | Value | When the build fails |
 |---|---|
 | `breaking` | At least one BREAKING finding exists. **Default.** |
 | `warning` | At least one BREAKING or WARNING finding exists. |
 | `any` | Any finding exists (including INFO). |
+
+### Approval Override
+
+When `approval-required-to-bypass: true`, an authorised approver can unblock a PR without fixing the breaking change:
+
+1. The scan runs, detects a breaking change, and exits with code 1 — blocking the PR.
+2. An approver listed under `approvers` adds the `approval-label` to the PR or MR.
+3. CI re-runs the scan. Contract Guardian checks whether the label is present **and** was applied by a listed approver.
+4. If the check passes, the verdict is downgraded from **FAIL → WARN** (exit code 0) and the PR unblocks.
+5. The terminal output and PR comment clearly show the override so there is an audit trail.
+
+**Requirements:**
+- `--github-pr` or `--gitlab-mr` must be passed to the scan command so Contract Guardian knows which PR/MR to inspect.
+- The `GITHUB_TOKEN` (or `GITLAB_TOKEN`) must have permission to read labels and issue events.
+
+**When no CI integration is configured** (terminal-only scan), the approval override is never applied even if `approval-required-to-bypass: true` — the setting is silently ignored.
 
 ---
 
@@ -354,6 +396,11 @@ rules:
 
 gate:
   block-on: breaking
+  approval-required-to-bypass: true
+  approval-label: "schema-override"
+  approvers:
+    - alice
+    - platform-team
 ```
 
 ---
@@ -386,8 +433,12 @@ When `.contract-guardian.yml` is missing or a section is omitted, Contract Guard
 |---|---|
 | `sources` | `kafka` source at `schemas/kafka/**/*.avsc` |
 | `rules.kafka.compatibility` | `BACKWARD` |
+| `rules.kafka.n-version-compatibility` | `1` |
 | `rules.rest.breaking` | `endpoint-removed`, `required-param-added`, `response-field-removed`, `response-field-type-changed`, `status-code-removed` |
 | `rules.rest.warning` | `response-field-deprecated`, `parameter-renamed` |
 | `rules.database.breaking` | `column-removed`, `table-removed`, `not-null-added-no-default`, `jsonb-field-removed`, `jsonb-field-type-changed`, `column-type-changed` |
 | `rules.database.warning` | `column-renamed`, `jsonb-field-renamed`, `migration-modified` |
 | `gate.block-on` | `breaking` |
+| `gate.approval-required-to-bypass` | `false` |
+| `gate.approval-label` | _(none)_ |
+| `gate.approvers` | _(empty — override never granted)_ |

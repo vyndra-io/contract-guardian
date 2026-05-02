@@ -98,6 +98,11 @@ public class TerminalReporter implements Reporter {
         if (verdict.status() == VerdictStatus.FAIL) {
             out.println("  Policy requires 0 breaking changes to merge.");
         }
+        if (verdict.isOverridden()) {
+            out.println("  " + colorize(WARNING_SIGN + "  Override approved by "
+                    + verdict.approvalStatus().approvedBy()
+                    + " — proceeding despite breaking changes", YELLOW, false));
+        }
     }
 
     private String colorize(final String text, final String color, final boolean bold) {
