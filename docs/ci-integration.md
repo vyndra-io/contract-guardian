@@ -95,6 +95,33 @@ jobs:
 
 > The built-in `GITHUB_TOKEN` has `pull_requests: write` permission by default — no extra configuration needed to post PR comments.
 
+### Approval Override — GitHub
+
+When a PR is blocked by a breaking change, an authorised approver can unblock it by applying the configured label. No changes to the workflow file are required — the scan command automatically checks for the label when `--github-pr` is set and `approval-required-to-bypass: true` is in the config.
+
+**Config (`.contract-guardian.yml`):**
+```yaml
+gate:
+  block-on: breaking
+  approval-required-to-bypass: true
+  approval-label: "schema-override"
+  approvers:
+    - alice
+    - platform-team
+```
+
+**Override flow:**
+
+1. PR is raised → scan fails → PR is blocked.
+2. An approver listed under `approvers` adds the label `schema-override` to the PR in GitHub.
+3. CI automatically re-runs (or the approver manually triggers it).
+4. Contract Guardian fetches the PR labels and label events, sees the label was applied by a listed approver, and downgrades the verdict from **FAIL → WARN** (exit 0).
+5. The PR comment is updated with a visible override notice; the PR unblocks.
+
+The `GITHUB_TOKEN` already has permission to read labels and issue events — no extra scope is needed.
+
+---
+
 ### Caching the Build
 
 If you run Contract Guardian on every PR, caching the Maven local repository speeds up subsequent runs:
@@ -163,6 +190,25 @@ contract-guardian:
 1. In GitLab, go to your project → Settings → Access Tokens.
 2. Create a token with `api` scope.
 3. Add it as a CI/CD variable named `GITLAB_CONTRACT_GUARDIAN_TOKEN` (mask it so it doesn't appear in logs).
+
+### Approval Override — GitLab
+
+Same concept as GitHub. Add the label to the MR, re-run the pipeline, and Contract Guardian reads the label and its event history via the GitLab API.
+
+**Config (`.contract-guardian.yml`):**
+```yaml
+gate:
+  block-on: breaking
+  approval-required-to-bypass: true
+  approval-label: "schema-override"
+  approvers:
+    - alice
+    - platform-team
+```
+
+Contract Guardian uses `resource_label_events` to verify *who* applied the label, so only listed approvers can grant an override — adding the label yourself does not count unless your username is in `approvers`.
+
+The existing `GITLAB_CONTRACT_GUARDIAN_TOKEN` with `api` scope covers label and event reads — no extra scope is needed.
 
 **Self-hosted GitLab:**
 
@@ -296,9 +342,9 @@ For full Maven plugin documentation, see [Maven Plugin](maven-plugin.md).
 
 | Variable | Used by | Purpose |
 |---|---|---|
-| `GITHUB_TOKEN` | GitHub PR reporter | Token with `pull_requests` write scope |
-| `GITLAB_TOKEN` | GitLab MR reporter | Token with `api` scope |
-| `GITLAB_API_URL` | GitLab MR reporter | API base for self-hosted instances, e.g. `https://gitlab.example.com/api/v4` |
+| `GITHUB_TOKEN` | GitHub PR reporter, approval checker | Token with `pull_requests` write scope (built-in token is sufficient) |
+| `GITLAB_TOKEN` | GitLab MR reporter, approval checker | Token with `api` scope |
+| `GITLAB_API_URL` | GitLab MR reporter, approval checker | API base for self-hosted instances, e.g. `https://gitlab.example.com/api/v4` |
 
 ---
 

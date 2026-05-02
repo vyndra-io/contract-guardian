@@ -90,6 +90,36 @@ public class GitHubApiClient {
     }
 
     /**
+     * Lists the labels currently applied to a pull request.
+     *
+     * @param owner    the repository owner (user or org)
+     * @param repo     the repository name
+     * @param prNumber the pull request number
+     * @return a JSON array of label objects, each containing a {@code name} field
+     * @throws GitHubApiException if the API call fails
+     */
+    public JsonNode listLabels(final String owner, final String repo, final int prNumber) {
+        final String url = String.format("%s/repos/%s/%s/issues/%d/labels", API_BASE, owner, repo, prNumber);
+        return executeRequest(buildGetRequest(url));
+    }
+
+    /**
+     * Lists the issue events for a pull request, which includes {@code labeled} events
+     * recording who applied each label and when.
+     *
+     * @param owner    the repository owner (user or org)
+     * @param repo     the repository name
+     * @param prNumber the pull request number
+     * @return a JSON array of event objects; {@code labeled} events contain {@code label.name}
+     *         and {@code actor.login} fields
+     * @throws GitHubApiException if the API call fails
+     */
+    public JsonNode listLabelEvents(final String owner, final String repo, final int prNumber) {
+        final String url = String.format("%s/repos/%s/%s/issues/%d/events", API_BASE, owner, repo, prNumber);
+        return executeRequest(buildGetRequest(url));
+    }
+
+    /**
      * Finds an existing contract-guardian comment by looking for the hidden marker.
      *
      * @param comments the JSON array of existing PR comments

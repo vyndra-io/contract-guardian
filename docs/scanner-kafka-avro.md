@@ -179,6 +179,30 @@ Old messages that don't include `currency` will use the default `"USD"`. No cons
 
 ---
 
+## N-Version Compatibility
+
+By default Contract Guardian checks the current schema against the **immediately preceding version** on the baseline branch (N=1). If your consumers are allowed to be up to N releases behind, you can widen the compatibility window so the schema must remain compatible with the last N committed versions:
+
+```yaml
+rules:
+  kafka:
+    compatibility: BACKWARD
+    n-version-compatibility: 3   # must be backward compatible with last 3 versions
+```
+
+**When to use this:**
+
+- Your deployment pipeline allows services to lag by up to 2 releases (set `n-version-compatibility: 3`).
+- You want to catch changes that would be fine against the last release but break consumers still running two releases back.
+
+**How it works:**
+
+Contract Guardian uses `git log` to find the last N committed versions of the schema file on the base branch, then runs the compatibility check against each one. A finding is emitted if the change breaks compatibility with **any** version in the window.
+
+The default value is `1` (check against the immediately preceding version only). Setting it to `0` disables n-version checking (equivalent to `1` in practice).
+
+---
+
 ## Per-Topic Overrides
 
 Apply a different compatibility mode to specific file paths using `overrides`. The `topic` value is a glob matched against the file path relative to the repo root. First match wins.
