@@ -82,7 +82,7 @@ class PolicyParserTest {
     @Test
     void restRuleConfig_isIgnored() {
         RestRuleConfig config = new RestRuleConfig(
-                List.of(), List.of(), List.of("/internal/**", "/admin/**"));
+                List.of(), List.of(), List.of("/internal/**", "/admin/**"), 1);
 
         assertThat(config.isIgnored("/internal/health")).isTrue();
         assertThat(config.isIgnored("/internal/deep/path")).isTrue();
@@ -99,6 +99,67 @@ class PolicyParserTest {
                 .isPresent()
                 .get()
                 .isInstanceOf(RestRuleConfig.class);
+    }
+
+    @Test
+    void kafkaRules_nVersionCompatibility_parsedFromFixture() {
+        Path configFile = Path.of("src/test/resources/policy/valid-config.yml");
+        PolicyConfig config = parser.parse(configFile);
+
+        KafkaRuleConfig kafkaRules = (KafkaRuleConfig) config.rules().get("kafka");
+        assertThat(kafkaRules.nVersionCompatibility()).isEqualTo(2);
+    }
+
+    @Test
+    void kafkaRules_nVersionCompatibility_defaultsToOne(@TempDir Path tempDir) throws IOException {
+        Path config = tempDir.resolve("kafka-no-n.yml");
+        Files.writeString(config, """
+                version: "1"
+                sources:
+                  kafka:
+                    paths:
+                      - "**/*.avsc"
+                rules:
+                  kafka:
+                    compatibility: BACKWARD
+                """);
+        KafkaRuleConfig kafkaRules = (KafkaRuleConfig) parser.parse(config).rules().get("kafka");
+        assertThat(kafkaRules.nVersionCompatibility()).isEqualTo(1);
+    }
+
+    @Test
+    void restRules_nVersionCompatibility_parsedFromYaml(@TempDir Path tempDir) throws IOException {
+        Path config = tempDir.resolve("rest-with-n.yml");
+        Files.writeString(config, """
+                version: "1"
+                sources:
+                  rest:
+                    paths:
+                      - "api/**/*.yaml"
+                rules:
+                  rest:
+                    n-version-compatibility: 3
+                """);
+        RestRuleConfig restRules = (RestRuleConfig) parser.parse(config).rules().get("rest");
+        assertThat(restRules.nVersionCompatibility()).isEqualTo(3);
+    }
+
+    @Test
+    void restRules_nVersionCompatibility_defaultsToOne(@TempDir Path tempDir) throws IOException {
+        Path config = tempDir.resolve("rest-no-n.yml");
+        Files.writeString(config, """
+                version: "1"
+                sources:
+                  rest:
+                    paths:
+                      - "api/**/*.yaml"
+                rules:
+                  rest:
+                    breaking:
+                      - endpoint-removed
+                """);
+        RestRuleConfig restRules = (RestRuleConfig) parser.parse(config).rules().get("rest");
+        assertThat(restRules.nVersionCompatibility()).isEqualTo(1);
     }
 
     @Test

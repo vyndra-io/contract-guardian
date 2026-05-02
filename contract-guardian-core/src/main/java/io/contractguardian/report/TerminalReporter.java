@@ -58,8 +58,8 @@ public class TerminalReporter implements Reporter {
             for (final Finding f : result.findings()) {
                 if (f.severity() == Severity.BREAKING) {
                     out.println("    " + f.message());
-                    if (f.detail() != null) {
-                        out.println("    " + f.detail());
+                    if (f.fix() != null) {
+                        out.println("    " + colorize("Fix: ", YELLOW, false) + f.fix());
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package io.contractguardian.engine;
 
+import io.contractguardian.model.Finding;
 import io.contractguardian.model.ScanResult;
 import io.contractguardian.policy.PolicyConfig;
 import io.contractguardian.policy.RuleConfig;
@@ -11,7 +12,9 @@ import io.contractguardian.util.GitHelper;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -70,13 +73,22 @@ public class DiffAnalyzer {
                 continue;
             }
 
-            Path baseline = null;
+            final int n = ruleConfig.get().nVersionCompatibility();
+            final List<Path> baselines = new ArrayList<>();
             try {
-                baseline = git.extractFileAtRef(baseRef, file);
-                final ScanResult result = scanner.get().scan(currentFile, baseline, ruleConfig.get());
+                if (n <= 1) {
+                    final Path baseline = git.extractFileAtRef(baseRef, file);
+                    if (baseline != null) {
+                        baselines.add(baseline);
+                    }
+                } else {
+                    baselines.addAll(git.fileHistoryAtRef(baseRef, file, n));
+                }
+                final ScanResult result = runAndMerge(
+                        scanner.get(), currentFile, baselines, ruleConfig.get());
                 results.add(result);
             } finally {
-                if (baseline != null) {
+                for (final Path baseline : baselines) {
                     try {
                         Files.deleteIfExists(baseline);
                     } catch (IOException e) {
@@ -88,5 +100,24 @@ public class DiffAnalyzer {
         }
 
         return results;
+    }
+
+    private ScanResult runAndMerge(final ContractScanner scanner, final Path current,
+                                   final List<Path> baselines, final RuleConfig config) {
+        if (baselines.isEmpty()) {
+            return scanner.scan(current, null, config);
+        }
+        final long startNanos = System.nanoTime();
+        final LinkedHashSet<Finding> merged = new LinkedHashSet<>();
+        ScanResult last = null;
+        for (final Path baseline : baselines) {
+            last = scanner.scan(current, baseline, config);
+            merged.addAll(last.findings());
+        }
+        return new ScanResult(
+                last.file(),
+                last.contractType(),
+                List.copyOf(merged),
+                Duration.ofNanos(System.nanoTime() - startNanos));
     }
 }

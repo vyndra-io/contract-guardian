@@ -99,6 +99,44 @@ public class GitHelper {
     }
 
     /**
+     * Returns temp files containing the content of a file at each of the last {@code n} commits
+     * on the given ref that touched that file, ordered most-recent-first.
+     *
+     * <p>If the file has fewer than {@code n} commits in its history at the given ref, only the
+     * available commits are returned. An empty list is returned when the file has no history
+     * (i.e. it is being added for the first time).
+     *
+     * @param ref      the git ref to walk history from (e.g. "origin/main")
+     * @param filePath the file path relative to the repository root
+     * @param n        the maximum number of historical versions to retrieve
+     * @return an ordered list of temp files, most-recent version first; caller is responsible for deletion
+     */
+    public List<Path> fileHistoryAtRef(final String ref, final String filePath, final int n) {
+        final String logOutput;
+        try {
+            logOutput = runGit("log", "--follow", "-n", String.valueOf(n),
+                    "--pretty=format:%H", ref, "--", filePath);
+        } catch (GitException e) {
+            return List.of();
+        }
+        if (logOutput.isBlank()) {
+            return List.of();
+        }
+        final List<Path> result = new ArrayList<>();
+        for (final String sha : logOutput.split("\n")) {
+            final String trimmed = sha.strip();
+            if (trimmed.isEmpty()) {
+                continue;
+            }
+            final Path extracted = extractFileAtRef(trimmed, filePath);
+            if (extracted != null) {
+                result.add(extracted);
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    /**
      * Checks whether the working directory is inside a git repository.
      *
      * @return {@code true} if this is a git repository

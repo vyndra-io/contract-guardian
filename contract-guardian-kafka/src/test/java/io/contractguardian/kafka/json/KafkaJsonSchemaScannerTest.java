@@ -15,9 +15,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KafkaJsonSchemaScannerTest {
 
     private final KafkaJsonSchemaScanner scanner = new KafkaJsonSchemaScanner();
-    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of());
-    private final KafkaRuleConfig forwardConfig = new KafkaRuleConfig(CompatibilityMode.FORWARD, List.of());
-    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of());
+    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of(), 1);
+    private final KafkaRuleConfig forwardConfig = new KafkaRuleConfig(CompatibilityMode.FORWARD, List.of(), 1);
+    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of(), 1);
     private final SourceConfig kafkaSource = new SourceConfig("kafka",
             List.of("schemas/**/*.json"), "branch:main");
 

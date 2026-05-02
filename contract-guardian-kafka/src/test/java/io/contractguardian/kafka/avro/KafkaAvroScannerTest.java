@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KafkaAvroScannerTest {
 
     private final KafkaAvroScanner scanner = new KafkaAvroScanner();
-    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of());
-    private final KafkaRuleConfig forwardConfig = new KafkaRuleConfig(CompatibilityMode.FORWARD, List.of());
-    private final KafkaRuleConfig fullConfig = new KafkaRuleConfig(CompatibilityMode.FULL, List.of());
-    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of());
+    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of(), 1);
+    private final KafkaRuleConfig forwardConfig = new KafkaRuleConfig(CompatibilityMode.FORWARD, List.of(), 1);
+    private final KafkaRuleConfig fullConfig = new KafkaRuleConfig(CompatibilityMode.FULL, List.of(), 1);
+    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of(), 1);
 
     private Path scenario(String name, String file) {
         return Path.of("src/test/resources/avro-scenarios", name, file);

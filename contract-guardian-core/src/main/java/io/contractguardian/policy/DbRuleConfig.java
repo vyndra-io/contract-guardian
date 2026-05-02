@@ -105,6 +105,7 @@ public class DbRuleConfig extends RuleConfig {
      *
      * @return the n-version compatibility number
      */
+    @Override
     public int nVersionCompatibility() {
         return nVersionCompatibility;
     }

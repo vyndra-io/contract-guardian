@@ -25,10 +25,11 @@ public class AvroFindingFactory {
         final String location = incompat.getLocation();
         final String message = incompat.getMessage();
 
+        final String fieldName = message != null && !message.isBlank() ? message : location;
         final String humanMessage = switch (type) {
             case READER_FIELD_MISSING_DEFAULT_VALUE ->
-                    String.format("Field at '%s' was removed or has no default — breaks %s compatibility",
-                            location, direction);
+                    String.format("Field '%s' has no default value — breaks %s compatibility",
+                            fieldName, direction);
             case TYPE_MISMATCH ->
                     String.format("Type changed at '%s' — breaks %s compatibility: %s",
                             location, direction, message);
@@ -58,8 +59,8 @@ public class AvroFindingFactory {
     private String suggestFix(final SchemaIncompatibilityType type, final String direction) {
         return switch (type) {
             case READER_FIELD_MISSING_DEFAULT_VALUE ->
-                    "Add a default value to the field before removing it, " +
-                            "or mark it as deprecated and remove in a future version";
+                    "Add a \"default\" to the field declaration (e.g. \"default\": null) " +
+                            "so existing consumers can safely skip it";
             case TYPE_MISMATCH ->
                     "Use a union type to support both old and new types during migration";
             case MISSING_ENUM_SYMBOLS ->

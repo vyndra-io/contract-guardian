@@ -27,4 +27,19 @@ public abstract class RuleConfig {
     public String sourceName() {
         return sourceName;
     }
+
+    /**
+     * Returns the number of previous schema versions the current version must remain compatible with.
+     *
+     * <p>A value of {@code 1} (the default) means compatibility is checked only against the
+     * immediately preceding version. A value greater than {@code 1} causes the scanner to
+     * check against the last N committed versions of the file on the base branch.
+     *
+     * <p>Subclasses override this method when they store the configured value.
+     *
+     * @return the n-version compatibility window; defaults to {@code 1}
+     */
+    public int nVersionCompatibility() {
+        return 1;
+    }
 }

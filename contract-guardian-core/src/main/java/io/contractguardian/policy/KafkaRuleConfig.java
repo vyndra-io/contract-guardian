@@ -29,18 +29,22 @@ public class KafkaRuleConfig extends RuleConfig {
 
     private final CompatibilityMode compatibility;
     private final List<CompatibilityOverride> overrides;
+    private final int nVersionCompatibility;
 
     /**
      * Creates a Kafka rule configuration.
      *
-     * @param compatibility the default compatibility mode
-     * @param overrides     per-topic compatibility overrides
+     * @param compatibility        the default compatibility mode
+     * @param overrides            per-topic compatibility overrides
+     * @param nVersionCompatibility number of previous versions that must remain compatible
      */
     public KafkaRuleConfig(final CompatibilityMode compatibility,
-                           final List<CompatibilityOverride> overrides) {
+                           final List<CompatibilityOverride> overrides,
+                           final int nVersionCompatibility) {
         super("kafka");
         this.compatibility = compatibility;
         this.overrides = List.copyOf(overrides);
+        this.nVersionCompatibility = nVersionCompatibility;
     }
 
     /**
@@ -59,6 +63,16 @@ public class KafkaRuleConfig extends RuleConfig {
      */
     public List<CompatibilityOverride> overrides() {
         return overrides;
+    }
+
+    /**
+     * Returns the number of previous schema versions the current version must remain compatible with.
+     *
+     * @return the n-version compatibility window
+     */
+    @Override
+    public int nVersionCompatibility() {
+        return nVersionCompatibility;
     }
 
     /**
@@ -85,6 +99,6 @@ public class KafkaRuleConfig extends RuleConfig {
      * @return the default config
      */
     public static KafkaRuleConfig defaultConfig() {
-        return new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of());
+        return new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of(), 1);
     }
 }

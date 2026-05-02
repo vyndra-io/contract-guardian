@@ -15,8 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class KafkaProtobufScannerTest {
 
     private final KafkaProtobufScanner scanner = new KafkaProtobufScanner();
-    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of());
-    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of());
+    private final KafkaRuleConfig backwardConfig = new KafkaRuleConfig(CompatibilityMode.BACKWARD, List.of(), 1);
+    private final KafkaRuleConfig noneConfig = new KafkaRuleConfig(CompatibilityMode.NONE, List.of(), 1);
     private final SourceConfig kafkaSource = new SourceConfig("kafka",
             List.of("schemas/**/*.proto"), "branch:main");
 
